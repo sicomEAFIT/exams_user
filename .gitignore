@@ -1,3 +1,13 @@
+.gradle
+/local.properties
+/.idea/workspace.xml
+/.idea/libraries
+.DS_Store
+/build
+
+# Created by https://www.gitignore.io
+
+### Android ###
 # Built application files
 *.apk
 *.ap_
@@ -25,3 +35,7 @@ proguard/
 
 # Log Files
 *.log
+
+### Android Patch ###
+gen-external-apklibs
+
