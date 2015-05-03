@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 
 import com.svanegas.exams.ExamActivity;
 import com.svanegas.exams.R;
@@ -52,7 +51,7 @@ public class MainActivity extends ActionBarActivity implements
       tab.setText(adapter.getPageTitle(i));
       tab.setTabListener(this);
       // Remover efecto 'ripple'. Porque es feo.
-      tab.getView().findViewById(R.id.reveal).setVisibility(View.GONE);
+      //tab.getView().findViewById(R.id.reveal).setVisibility(View.GONE);
       tabHost.addTab(tab);
     }
   }

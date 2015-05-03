@@ -31,7 +31,10 @@ import com.svanegas.exams.model.ExamItem;
 import com.svanegas.exams.support.BitmapHandler;
 
 import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class FirstFragment extends Fragment {
@@ -88,42 +91,13 @@ public class FirstFragment extends Fragment {
   private View.OnClickListener takePhotoListener = new View.OnClickListener() {
     @Override
     public void onClick(View v) {
-      //captureImage(v);
       openImageIntent();
     }
   };
 
-  /*private void captureImage(View v) {
-    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-    File photo = new File(Environment.getExternalStoragePublicDirectory(
-            Environment.DIRECTORY_PICTURES), "temp_picture.jpg");
-    imageUri = Uri.fromFile(photo);
-    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-  }*/
-
-  public String getPath(Uri uri) throws Exception {
-    // just some safety built in
-    if( uri == null ) throw new Exception("Uri is null");
-    // try to retrieve the image from the media store first
-    // this will only work for images selected from gallery
-    String[] projection = { MediaStore.Images.Media.DATA };
-    Cursor cursor = getActivity().managedQuery(uri, projection, null, null,
-            null);
-    if (cursor != null) {
-      int column_index = cursor
-              .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-      cursor.moveToFirst();
-      return cursor.getString(column_index);
-    }
-    // this is our fallback here
-    return uri.getPath();
-  }
-
   private void openImageIntent() {
     // En caso de seleccionar cámara se configura el destino.
-    final File photo = new File(Environment.getExternalStoragePublicDirectory(
-            Environment.DIRECTORY_PICTURES), "temp_picture.jpg");
+    final File photo = createImageFile();
     imageUri = Uri.fromFile(photo);
 
     // Camera.
@@ -158,13 +132,50 @@ public class FirstFragment extends Fragment {
     startActivityForResult(chooserIntent, REQUEST_IMAGE_CAPTURE);
   }
 
+  private File createImageFile() {
+    // Create an image file name
+    String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
+            .format(new Date());
+    String imageFileName = timeStamp + "_";
+    String rootPath = Environment.getExternalStorageDirectory().toString();
+    String appName = getResources().getString(R.string.app_name);
+    File storageDir = new File(rootPath + "/" + appName + "/Media/Captures");
+    storageDir.mkdirs();
+    File image = null;
+    try {
+      image = File.createTempFile(
+              imageFileName,  /* prefix */
+              ".jpg",         /* suffix */
+              storageDir      /* directory */
+      );
+    }
+    catch (IOException e) {
+      e.printStackTrace();
+    }
+    return image;
+  }
 
-
+  private String getPath(Uri uri) throws Exception {
+    // just some safety built in
+    if( uri == null ) throw new Exception("Uri is null");
+    // try to retrieve the image from the media store first
+    // this will only work for images selected from gallery
+    String[] projection = { MediaStore.Images.Media.DATA };
+    Cursor cursor = getActivity().managedQuery(uri, projection, null, null,
+            null);
+    if (cursor != null) {
+      int column_index = cursor
+              .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+      cursor.moveToFirst();
+      return cursor.getString(column_index);
+    }
+    // this is our fallback here
+    return uri.getPath();
+  }
 
   @Override
   public void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
-    Log.i("RESULT", "OnActivityResult del fragmento");
     if (resultCode == Activity.RESULT_OK) {
       if (requestCode == REQUEST_IMAGE_CAPTURE) {
         try {
@@ -185,7 +196,7 @@ public class FirstFragment extends Fragment {
           Toast.makeText(getActivity(), getResources()
                           .getString(R.string.could_not_load_image),
                           Toast.LENGTH_SHORT).show();
-          Log.i("RESULT", "OnActivityResult FRAG - > ERR: " + e.getMessage());
+          Log.e("RESULT", "OnActivityResult FRAG - > ERR: " + e.getMessage());
         }
       }
     }
