@@ -139,7 +139,8 @@ public class FirstFragment extends Fragment {
     String imageFileName = timeStamp + "_";
     String rootPath = Environment.getExternalStorageDirectory().toString();
     String appName = getResources().getString(R.string.app_name);
-    File storageDir = new File(rootPath + "/" + appName + "/Media/Captures");
+    File storageDir = new File(rootPath + "/" + appName +
+                               "/Media/Exams Captures");
     storageDir.mkdirs();
     File image = null;
     try {
@@ -173,15 +174,33 @@ public class FirstFragment extends Fragment {
     return uri.getPath();
   }
 
+  private void deleteImageFile(Uri url) {
+    if (url != null) {
+      File fileToDelete = new File(url.getPath());
+      if (fileToDelete.exists()) fileToDelete.delete();
+    }
+  }
+
   @Override
   public void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
     if (resultCode == Activity.RESULT_OK) {
       if (requestCode == REQUEST_IMAGE_CAPTURE) {
         try {
+          final boolean fromCamera;
+          if (data == null) fromCamera = true;
+          else {
+            final String action = data.getAction();
+            if (action == null) fromCamera = false;
+            else fromCamera = action.equals(MediaStore.ACTION_IMAGE_CAPTURE);
+          }
+
           Uri selectedImage;
-          if (data == null) selectedImage = imageUri;
-          else selectedImage = data.getData();
+          if (fromCamera) selectedImage = imageUri;
+          else {
+            deleteImageFile(imageUri);
+            selectedImage = data == null ? null : data.getData();
+          }
           if (selectedImage == null) throw new Exception("Uri image is null");
           String path = getPath(selectedImage);
           ContentResolver resolver = getActivity().getContentResolver();
@@ -198,6 +217,11 @@ public class FirstFragment extends Fragment {
                           Toast.LENGTH_SHORT).show();
           Log.e("RESULT", "OnActivityResult FRAG - > ERR: " + e.getMessage());
         }
+      }
+    }
+    else if (resultCode == Activity.RESULT_CANCELED) {
+      if (requestCode == REQUEST_IMAGE_CAPTURE) {
+        deleteImageFile(imageUri);
       }
     }
   }
