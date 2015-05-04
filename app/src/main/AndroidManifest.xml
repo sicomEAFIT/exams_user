@@ -23,13 +23,6 @@
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
     </activity>
-    <activity
-      android:name="com.svanegas.exams.ExamActivity"
-      android:label="@string/title_activity_exam">
-      <meta-data
-        android:name="android.support.PARENT_ACTIVITY"
-        android:value="com.svanegas.exams.view.MainActivity"/>
-    </activity>
   </application>
 
 </manifest>

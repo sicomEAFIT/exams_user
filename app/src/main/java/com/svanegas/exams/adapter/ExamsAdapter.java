@@ -53,12 +53,15 @@ public class ExamsAdapter extends
 
   public void addItem(ExamItem item) {
     data.add(item);
+    // TODO Todavía no funciona totalmente actualizar el número de página.
     notifyItemInserted(data.size() - 1);
   }
 
   public void removeItem(int position) {
     data.remove(position);
     notifyItemRemoved(position);
+    notifyItemRangeChanged(0, data.size());
+    //notifyDataSetChanged();
   }
 
   class ExamViewHolder extends RecyclerView.ViewHolder implements

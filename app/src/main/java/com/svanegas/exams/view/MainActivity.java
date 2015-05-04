@@ -1,6 +1,5 @@
 package com.svanegas.exams.view;
 
-import android.content.Intent;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -8,7 +7,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.svanegas.exams.ExamActivity;
 import com.svanegas.exams.R;
 import com.svanegas.exams.adapter.ViewPagerAdapter;
 
@@ -74,9 +72,6 @@ public class MainActivity extends ActionBarActivity implements
     //noinspection SimplifiableIfStatement
     if (id == R.id.action_settings) {
       return true;
-    }
-    if (id == R.id.show_exams) {
-      startActivity(new Intent(this, ExamActivity.class));
     }
 
     return super.onOptionsItemSelected(item);

@@ -21,10 +21,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.melnykov.fab.FloatingActionButton;
 import com.melnykov.fab.ScrollDirectionListener;
+import com.oguzdev.circularfloatingactionmenu.library.FloatingActionButton;
+import com.oguzdev.circularfloatingactionmenu.library.FloatingActionMenu;
+import com.oguzdev.circularfloatingactionmenu.library.SubActionButton;
 import com.svanegas.exams.adapter.ExamsAdapter;
 import com.svanegas.exams.R;
 import com.svanegas.exams.model.ExamItem;
@@ -43,6 +46,7 @@ public class FirstFragment extends Fragment {
   private Uri imageUri;
   private RecyclerView recyclerView;
   private ExamsAdapter adapter;
+  private FloatingActionMenu actionMenu;
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -54,8 +58,8 @@ public class FirstFragment extends Fragment {
     recyclerView.setAdapter(adapter);
     recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-    final FloatingActionButton fab =
-            (FloatingActionButton) layout.findViewById(R.id.fab);
+    /*final com.melnykov.fab.FloatingActionButton fab =
+            (com.melnykov.fab.FloatingActionButton) layout.findViewById(R.id.fab);
     fab.attachToRecyclerView(recyclerView, new ScrollDirectionListener() {
       @Override
       public void onScrollDown() {
@@ -78,7 +82,37 @@ public class FirstFragment extends Fragment {
       }
     });
 
-    fab.setOnClickListener(takePhotoListener);
+    fab.setOnClickListener(takePhotoListener);*/
+
+    SubActionButton.Builder itemBuilder = new SubActionButton.Builder(getActivity());
+    // Ítem para agregar nuevo
+    ImageView addIcon = new ImageView(getActivity());
+    addIcon.setImageResource(R.drawable.ic_plus);
+    SubActionButton addItem = itemBuilder.setContentView(addIcon).build();
+    addItem.setOnClickListener(takePhotoListener);
+
+    // Ítem finalizar
+    ImageView doneIcon = new ImageView(getActivity());
+    doneIcon.setImageResource(R.drawable.ic_check);
+    SubActionButton doneItem = itemBuilder.setContentView(doneIcon).build();
+
+
+    ImageView imageView = new ImageView(getActivity());
+    imageView.setImageResource(R.drawable.ic_action_new);
+
+    // Botón para abrir menú
+    FloatingActionButton actionButton = new FloatingActionButton.Builder(getActivity())
+            .setContentView(imageView)
+            .build();
+
+    int radius = getActivity().getResources().getDimensionPixelSize(R.dimen.action_menu_radius);
+    // Menú
+    actionMenu = new FloatingActionMenu.Builder(getActivity())
+            .addSubActionView(addItem, 100, 100)
+            .addSubActionView(doneItem, 100, 100)
+            .attachTo(actionButton)
+            .setRadius((int) (radius * 0.75))
+            .build();
     return layout;
   }
 
@@ -91,6 +125,7 @@ public class FirstFragment extends Fragment {
   private View.OnClickListener takePhotoListener = new View.OnClickListener() {
     @Override
     public void onClick(View v) {
+      actionMenu.close(true);
       openImageIntent();
     }
   };
@@ -106,7 +141,7 @@ public class FirstFragment extends Fragment {
     final PackageManager packageManager = getActivity().getPackageManager();
     final List<ResolveInfo> listCam = packageManager.queryIntentActivities(
             captureIntent, 0);
-    for(ResolveInfo res : listCam) {
+    for (ResolveInfo res : listCam) {
       final String packageName = res.activityInfo.packageName;
       final Intent intent = new Intent(captureIntent);
       intent.setComponent(new ComponentName(res.activityInfo.packageName,
@@ -140,7 +175,7 @@ public class FirstFragment extends Fragment {
     String rootPath = Environment.getExternalStorageDirectory().toString();
     String appName = getResources().getString(R.string.app_name);
     File storageDir = new File(rootPath + "/" + appName +
-                               "/Media/Exams Captures");
+            "/Media/Exams Captures");
     storageDir.mkdirs();
     File image = null;
     try {
@@ -158,10 +193,10 @@ public class FirstFragment extends Fragment {
 
   private String getPath(Uri uri) throws Exception {
     // just some safety built in
-    if( uri == null ) throw new Exception("Uri is null");
+    if (uri == null) throw new Exception("Uri is null");
     // try to retrieve the image from the media store first
     // this will only work for images selected from gallery
-    String[] projection = { MediaStore.Images.Media.DATA };
+    String[] projection = {MediaStore.Images.Media.DATA};
     Cursor cursor = getActivity().managedQuery(uri, projection, null, null,
             null);
     if (cursor != null) {
@@ -214,13 +249,14 @@ public class FirstFragment extends Fragment {
         catch (Exception e) {
           Toast.makeText(getActivity(), getResources()
                           .getString(R.string.could_not_load_image),
-                          Toast.LENGTH_SHORT).show();
+                  Toast.LENGTH_SHORT).show();
           Log.e("RESULT", "OnActivityResult FRAG - > ERR: " + e.getMessage());
         }
       }
     }
     else if (resultCode == Activity.RESULT_CANCELED) {
       if (requestCode == REQUEST_IMAGE_CAPTURE) {
+        actionMenu.open(true);
         deleteImageFile(imageUri);
       }
     }
