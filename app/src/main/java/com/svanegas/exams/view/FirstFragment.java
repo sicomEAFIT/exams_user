@@ -46,6 +46,7 @@ public class FirstFragment extends Fragment {
   private Uri imageUri;
   private RecyclerView recyclerView;
   private ExamsAdapter adapter;
+  private FloatingActionButton actionButton;
   private FloatingActionMenu actionMenu;
 
   @Override
@@ -84,7 +85,8 @@ public class FirstFragment extends Fragment {
 
     fab.setOnClickListener(takePhotoListener);*/
 
-    SubActionButton.Builder itemBuilder = new SubActionButton.Builder(getActivity());
+    SubActionButton.Builder itemBuilder = new SubActionButton
+            .Builder(getActivity());
     // Ítem para agregar nuevo
     ImageView addIcon = new ImageView(getActivity());
     addIcon.setImageResource(R.drawable.ic_plus);
@@ -101,8 +103,9 @@ public class FirstFragment extends Fragment {
     imageView.setImageResource(R.drawable.ic_action_new);
 
     // Botón para abrir menú
-    FloatingActionButton actionButton = new FloatingActionButton.Builder(getActivity())
+    actionButton = new FloatingActionButton.Builder(getActivity())
             .setContentView(imageView)
+            .setBackgroundDrawable(R.drawable.button_action_selector)
             .build();
 
     int radius = getActivity().getResources().getDimensionPixelSize(R.dimen.action_menu_radius);
@@ -191,6 +194,13 @@ public class FirstFragment extends Fragment {
     return image;
   }
 
+  private void deleteImageFile(Uri url) {
+    if (url != null) {
+      File fileToDelete = new File(url.getPath());
+      if (fileToDelete.exists()) fileToDelete.delete();
+    }
+  }
+
   private String getPath(Uri uri) throws Exception {
     // just some safety built in
     if (uri == null) throw new Exception("Uri is null");
@@ -209,10 +219,10 @@ public class FirstFragment extends Fragment {
     return uri.getPath();
   }
 
-  private void deleteImageFile(Uri url) {
-    if (url != null) {
-      File fileToDelete = new File(url.getPath());
-      if (fileToDelete.exists()) fileToDelete.delete();
+  public void translateFloatingActionButton(int pixels) {
+    if (actionButton != null) {
+      if (actionMenu.isOpen()) actionMenu.close(true);
+      actionButton.setTranslationX(-1 * pixels);
     }
   }
 

@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.svanegas.exams.R;
 import com.svanegas.exams.adapter.ViewPagerAdapter;
@@ -16,7 +17,7 @@ import it.neokree.materialtabs.MaterialTabListener;
 
 
 public class MainActivity extends ActionBarActivity implements
-        MaterialTabListener{
+        MaterialTabListener {
 
   private Toolbar toolbar;
   private MaterialTabHost tabHost;
@@ -36,24 +37,21 @@ public class MainActivity extends ActionBarActivity implements
     ViewPagerAdapter adapter = new ViewPagerAdapter(this,
             getSupportFragmentManager());
     viewPager.setAdapter(adapter);
-    viewPager.setOnPageChangeListener(
-            new ViewPager.SimpleOnPageChangeListener() {
-      @Override
-    public void onPageSelected(int position) {
-        tabHost.setSelectedNavigationItem(position);
-      }
-    });
+    viewPager.setOnPageChangeListener(adapter);
 
     for (int i = 0; i < adapter.getCount(); ++i) {
       MaterialTab tab = tabHost.newTab();
       tab.setText(adapter.getPageTitle(i));
       tab.setTabListener(this);
       // Remover efecto 'ripple'. Porque es feo.
-      //tab.getView().findViewById(R.id.reveal).setVisibility(View.GONE);
+      tab.getView().findViewById(R.id.reveal).setVisibility(View.GONE);
       tabHost.addTab(tab);
     }
   }
 
+  public void changeTabHostPosition(int position) {
+    tabHost.setSelectedNavigationItem(position);
+  }
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
