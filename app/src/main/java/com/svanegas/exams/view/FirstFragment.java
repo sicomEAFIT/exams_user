@@ -156,6 +156,7 @@ public class FirstFragment extends Fragment implements SnackBar
   }
 
   public HidingToolbarScrollListener getHidingToolbarScrollListener() {
+    Log.d("HidingActio" , "Llego al hiding y es: " + (hidingToolbarScrollListener == null));
     if (hidingToolbarScrollListener == null) {
       hidingToolbarScrollListener = new HidingToolbarScrollListener(
               getActivity()) {
@@ -283,6 +284,12 @@ public class FirstFragment extends Fragment implements SnackBar
       //if (actionMenu.isOpen()) actionMenu.close(true);
       actionButton.setTranslationX(-1 * pixels);
       actionMenu.updateItemPositions();
+    }
+  }
+
+  public void recyclerViewElementRemoved() {
+    if (hidingToolbarScrollListener != null) {
+      hidingToolbarScrollListener.setTotalScrolledDistance(0);
     }
   }
 

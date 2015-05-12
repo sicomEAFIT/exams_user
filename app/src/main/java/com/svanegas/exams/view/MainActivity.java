@@ -79,6 +79,11 @@ public class MainActivity extends ActionBarActivity implements
             .setInterpolator(new AccelerateInterpolator(2)).start();
   }
 
+  public void recyclerViewElementRemoved() {
+    showToolbar();
+    adapter.getFirstFragment().recyclerViewElementRemoved();
+  }
+
   public int getToolbarHeight() {
     return toolbar.getMinimumHeight();
   }

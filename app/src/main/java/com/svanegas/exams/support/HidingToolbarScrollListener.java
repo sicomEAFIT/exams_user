@@ -2,6 +2,7 @@ package com.svanegas.exams.support;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 
 import com.svanegas.exams.view.MainActivity;
 
@@ -17,11 +18,16 @@ public abstract class HidingToolbarScrollListener extends
   private boolean controlsVisible = true;
 
   public HidingToolbarScrollListener(Context context) {
+    // TODO It crashes here when screen goes to landscape and viewpager is used
     this.toolbarHeight = ((MainActivity) context).getToolbarHeight();
   }
 
   public void setToolbarOffset(int toolbarOffset) {
     this.toolbarOffset = toolbarOffset;
+  }
+
+  public void setTotalScrolledDistance(int totalScrolledDistance) {
+    this.totalScrolledDistance = totalScrolledDistance;
   }
 
   @Override
@@ -61,6 +67,7 @@ public abstract class HidingToolbarScrollListener extends
     }
 
     totalScrolledDistance += dy;
+    if (totalScrolledDistance < 0) totalScrolledDistance = 0;
   }
 
   private void clipToolbarOffset() {

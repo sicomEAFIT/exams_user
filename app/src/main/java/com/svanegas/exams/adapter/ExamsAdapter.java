@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.svanegas.exams.R;
 import com.svanegas.exams.model.ExamItem;
+import com.svanegas.exams.view.MainActivity;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -124,6 +125,7 @@ public class ExamsAdapter extends
     protected void onPostExecute(Void result) {
       // Cuando pase el tiempo, se notifica que todos los datos cambiaron
       ExamsAdapter.this.notifyDataSetChanged();
+      ((MainActivity) context).recyclerViewElementRemoved();
     }
   }
 }

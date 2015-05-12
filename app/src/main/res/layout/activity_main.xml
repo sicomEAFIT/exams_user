@@ -15,20 +15,31 @@
     android:id="@+id/app_bar_container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:background="@color/primary_color">
+    android:orientation="vertical">
 
-    <include
-      android:id="@+id/app_bar"
-      layout="@layout/app_bar"/>
-
-    <it.neokree.materialtabs.MaterialTabHost
-      android:id="@+id/tab_host"
+    <LinearLayout
       android:layout_width="match_parent"
-      android:layout_height="48dp"
-      app:accentColor="@color/accent_color"
-      app:primaryColor="@color/primary_color"
-      app:textColor="@color/white"/>
+      android:layout_height="wrap_content"
+      android:background="@color/primary_color"
+      android:orientation="vertical">
+
+      <include
+        android:id="@+id/app_bar"
+        layout="@layout/app_bar"/>
+
+      <it.neokree.materialtabs.MaterialTabHost
+        android:id="@+id/tab_host"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        app:accentColor="@color/accent_color"
+        app:primaryColor="@color/primary_color"
+        app:textColor="@color/white"/>
+    </LinearLayout>
+
+    <FrameLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:foreground="@drawable/bottom_shadow"/>
   </LinearLayout>
 
 </FrameLayout>
