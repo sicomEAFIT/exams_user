@@ -1,7 +1,9 @@
 package com.svanegas.exams.adapter;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,11 +24,13 @@ public class ExamsAdapter extends
   private Context context;
   private LayoutInflater inflater;
   private List<ExamItem> data = Collections.emptyList();
+  private RecyclerView.ItemAnimator animator;
 
-  public ExamsAdapter(Context context) {
+  public ExamsAdapter(Context context, RecyclerView.ItemAnimator animator) {
     this.context = context;
     inflater = LayoutInflater.from(context);
     data = new ArrayList();
+    this.animator = animator;
   }
 
   @Override
@@ -59,6 +63,11 @@ public class ExamsAdapter extends
   public void removeItem(int position) {
     data.remove(position);
     notifyItemRemoved(position);
+    // Se corre una tarea asincrónica que duerma por el tiempo que demora la
+    // animación de remover un ítem del RecyclerView.
+    // No se hace directamente acá porque no modificaba las vistas que no
+    // estaban recicladas. Y el notifyDataSetChanged interrumpe la animación.
+    new UpdateItemsPageNumberTask().execute(animator.getRemoveDuration());
   }
 
   class ExamViewHolder extends RecyclerView.ViewHolder implements
@@ -94,6 +103,27 @@ public class ExamsAdapter extends
     @Override
     public void onClick(View v) {
       removeItem(getPosition());
+    }
+  }
+
+  private class UpdateItemsPageNumberTask extends AsyncTask<Long, Void, Void> {
+
+    protected Void doInBackground(Long... millisParams) {
+      long timeToWait = millisParams[0];
+      // Se adicionan 300 milisegundos para evitar cortar la animación
+      timeToWait += 300;
+      try {
+        Thread.sleep(timeToWait);
+      }
+      catch (InterruptedException e) {
+        return null;
+      }
+      return null;
+    }
+
+    protected void onPostExecute(Void result) {
+      // Cuando pase el tiempo, se notifica que todos los datos cambiaron
+      ExamsAdapter.this.notifyDataSetChanged();
     }
   }
 }
