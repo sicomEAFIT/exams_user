@@ -10,6 +10,7 @@
   <string name="page_number">PÁGINA %1$d</string>
   <string name="select_image_source">Selecciona la fuente de la imagen</string>
   <string name="could_not_load_image">No se pudo cargar la imagen</string>
+  <string name="ok">OK</string>
   <string-array name="tab_titles">
     <item><b>CARGAR EXAMEN</b></item>
     <item><b>BUSCAR EXAMEN</b></item>
