@@ -64,7 +64,7 @@ public class MainActivity extends ActionBarActivity implements
   }
 
   public void translateToolbarContainer(int distance) {
-    toolbarContainer.setTranslationY(-distance);
+    toolbarContainer.setTranslationY(distance);
   }
 
   public void showToolbar() {

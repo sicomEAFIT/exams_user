@@ -24,8 +24,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.Toast;
 
+import com.github.mrengineer13.snackbar.SnackBar;
 import com.oguzdev.circularfloatingactionmenu.library.FloatingActionButton;
 import com.oguzdev.circularfloatingactionmenu.library.FloatingActionMenu;
 import com.oguzdev.circularfloatingactionmenu.library.SubActionButton;
@@ -34,6 +34,7 @@ import com.svanegas.exams.R;
 import com.svanegas.exams.model.ExamItem;
 import com.svanegas.exams.support.BitmapHandler;
 import com.svanegas.exams.support.HidingToolbarScrollListener;
+import com.svanegas.exams.support.UserFeedback;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,7 +43,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class FirstFragment extends Fragment {
+public class FirstFragment extends Fragment implements SnackBar
+        .OnVisibilityChangeListener {
 
   private static final int REQUEST_IMAGE_CAPTURE = 1;
   private Uri imageUri;
@@ -53,7 +55,10 @@ public class FirstFragment extends Fragment {
   private FloatingActionButton actionButton;
   private FloatingActionMenu actionMenu;
 
+  private SnackBar errorSnackBar;
+
   private static final int MENU_ICON_ROTATION_ANGLE = 135;
+  private static final int DEFAULT_SNACKBAR_HEIGHT = 96;
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -156,7 +161,7 @@ public class FirstFragment extends Fragment {
               getActivity()) {
         @Override
         public void onMoved(int distance) {
-          ((MainActivity) getActivity()).translateToolbarContainer(distance);
+          ((MainActivity) getActivity()).translateToolbarContainer(-distance);
         }
 
         @Override
@@ -312,10 +317,11 @@ public class FirstFragment extends Fragment {
           adapter.addItem(buildExamItem(bitmapResult));
         }
         catch (Exception e) {
-          Toast.makeText(getActivity(), getResources()
+          /*Toast.makeText(getActivity(), getResources()
                           .getString(R.string.could_not_load_image),
-                  Toast.LENGTH_SHORT).show();
-          Log.e("RESULT", "OnActivityResult FRAG - > ERR: " + e.getMessage());
+                  Toast.LENGTH_SHORT).show();*/
+          errorSnackBar = UserFeedback.showSnackBar(getActivity(),
+                  R.string.could_not_load_image, R.string.ok, this);
         }
       }
     }
@@ -325,5 +331,19 @@ public class FirstFragment extends Fragment {
         deleteImageFile(imageUri);
       }
     }
+  }
+
+  @Override
+  public void onShow(int i) {
+    int height = errorSnackBar != null ?
+                 errorSnackBar.getHeight() : DEFAULT_SNACKBAR_HEIGHT;
+    if (actionButton != null) {
+      actionButton.animate().translationY(-height).start();
+    }
+  }
+
+  @Override
+  public void onHide(int i) {
+    if (actionButton != null) actionButton.animate().translationY(0).start();
   }
 }
