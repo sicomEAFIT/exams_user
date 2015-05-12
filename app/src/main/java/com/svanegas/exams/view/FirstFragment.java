@@ -1,5 +1,7 @@
 package com.svanegas.exams.view;
 
+import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -24,7 +26,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.melnykov.fab.ScrollDirectionListener;
 import com.oguzdev.circularfloatingactionmenu.library.FloatingActionButton;
 import com.oguzdev.circularfloatingactionmenu.library.FloatingActionMenu;
 import com.oguzdev.circularfloatingactionmenu.library.SubActionButton;
@@ -32,6 +33,7 @@ import com.svanegas.exams.adapter.ExamsAdapter;
 import com.svanegas.exams.R;
 import com.svanegas.exams.model.ExamItem;
 import com.svanegas.exams.support.BitmapHandler;
+import com.svanegas.exams.support.HidingToolbarScrollListener;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,70 +47,57 @@ public class FirstFragment extends Fragment {
   private static final int REQUEST_IMAGE_CAPTURE = 1;
   private Uri imageUri;
   private RecyclerView recyclerView;
+  private HidingToolbarScrollListener hidingToolbarScrollListener;
   private ExamsAdapter adapter;
+
   private FloatingActionButton actionButton;
   private FloatingActionMenu actionMenu;
+
+  private static final int MENU_ICON_ROTATION_ANGLE = 135;
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
                            Bundle savedInstanceState) {
     View layout = inflater.inflate(R.layout.first_fragment, container, false);
 
+    initRecyclerView(layout);
+    initFloatingActionMenu();
+
+    return layout;
+  }
+
+  private void initRecyclerView(View layout) {
     recyclerView = (RecyclerView) layout.findViewById(R.id.recycler_view);
-    adapter = new ExamsAdapter(getActivity());
+    adapter = new ExamsAdapter(getActivity(), recyclerView.getItemAnimator());
     recyclerView.setAdapter(adapter);
+    int paddingTop = ((MainActivity) getActivity()).getToolbarAndTabsHeight();
+    recyclerView.setPadding(recyclerView.getPaddingLeft(), paddingTop,
+                            recyclerView.getPaddingRight(),
+                            recyclerView.getPaddingBottom());
     recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+    recyclerView.setOnScrollListener(getHidingToolbarScrollListener());
+  }
 
-    /*final com.melnykov.fab.FloatingActionButton fab =
-            (com.melnykov.fab.FloatingActionButton) layout.findViewById(R.id.fab);
-    fab.attachToRecyclerView(recyclerView, new ScrollDirectionListener() {
-      @Override
-      public void onScrollDown() {
-      }
-
-      @Override
-      public void onScrollUp() {
-      }
-    }, new RecyclerView.OnScrollListener() {
-      @Override
-      public void onScrollStateChanged(RecyclerView view, int scrollState) {
-        super.onScrollStateChanged(view, scrollState);
-        // Si se paró de hacer scroll mostrar el Floating Action Button
-        if (scrollState == 0) fab.show(true);
-      }
-
-      @Override
-      public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-        super.onScrolled(recyclerView, dx, dy);
-      }
-    });
-
-    fab.setOnClickListener(takePhotoListener);*/
-
-    SubActionButton.Builder itemBuilder = new SubActionButton
-            .Builder(getActivity());
+  private void initFloatingActionMenu() {
     // Ítem para agregar nuevo
-    ImageView addIcon = new ImageView(getActivity());
-    addIcon.setImageResource(R.drawable.ic_plus);
-    SubActionButton addItem = itemBuilder.setContentView(addIcon).build();
+    SubActionButton addItem = buildFloatingActionSubItem(R.drawable.ic_plus);
     addItem.setOnClickListener(takePhotoListener);
 
     // Ítem finalizar
-    ImageView doneIcon = new ImageView(getActivity());
-    doneIcon.setImageResource(R.drawable.ic_check);
-    SubActionButton doneItem = itemBuilder.setContentView(doneIcon).build();
+    SubActionButton doneItem = buildFloatingActionSubItem(R.drawable.ic_check);
 
-
-    ImageView imageView = new ImageView(getActivity());
-    imageView.setImageResource(R.drawable.ic_action_new);
+    final ImageView fabIcon = new ImageView(getActivity());
+    fabIcon.setImageResource(R.drawable.ic_action_new);
 
     // Botón para abrir menú
     actionButton = new FloatingActionButton.Builder(getActivity())
-            .setContentView(imageView)
+            .setContentView(fabIcon)
             .setBackgroundDrawable(R.drawable.button_action_selector)
             .build();
 
-    int radius = getActivity().getResources().getDimensionPixelSize(R.dimen.action_menu_radius);
+    int radius = getActivity().getResources()
+            .getDimensionPixelSize(R.dimen.action_menu_radius);
+
     // Menú
     actionMenu = new FloatingActionMenu.Builder(getActivity())
             .addSubActionView(addItem, 100, 100)
@@ -116,7 +105,72 @@ public class FirstFragment extends Fragment {
             .attachTo(actionButton)
             .setRadius((int) (radius * 0.75))
             .build();
-    return layout;
+
+    // Listen menu open and close events to animate the button content view
+    actionMenu.setStateChangeListener(buildRotateMenuListenerForMenu(fabIcon));
+  }
+
+  private SubActionButton buildFloatingActionSubItem(int iconDrawable) {
+    SubActionButton.Builder itemBuilder = new SubActionButton
+            .Builder(getActivity());
+    ImageView icon = new ImageView(getActivity());
+    icon.setImageResource(iconDrawable);
+    SubActionButton item = itemBuilder.setContentView(icon).build();
+    return item;
+  }
+
+  private FloatingActionMenu.MenuStateChangeListener
+          buildRotateMenuListenerForMenu(final ImageView fabIcon) {
+
+
+    return new FloatingActionMenu.MenuStateChangeListener() {
+      @Override
+      public void onMenuOpened(FloatingActionMenu floatingActionMenu) {
+        // Rotar el ícono del del FloatingActionButton 135 grados en sentido de
+        // las manecillas del reloj.
+        fabIcon.setRotation(0);
+        PropertyValuesHolder pvhR = PropertyValuesHolder.ofFloat(View.ROTATION,
+                                                      MENU_ICON_ROTATION_ANGLE);
+        ObjectAnimator animation = ObjectAnimator
+                .ofPropertyValuesHolder(fabIcon, pvhR);
+        animation.start();
+      }
+
+      @Override
+      public void onMenuClosed(FloatingActionMenu floatingActionMenu) {
+        // Rotar el ícono del del FloatingActionButton 135 grados en sentido
+        // contrario de las manecillas del reloj.
+        fabIcon.setRotation(MENU_ICON_ROTATION_ANGLE);
+        PropertyValuesHolder pvhR = PropertyValuesHolder.ofFloat(View.ROTATION,
+                                                                 0);
+        ObjectAnimator animation = ObjectAnimator
+                .ofPropertyValuesHolder(fabIcon, pvhR);
+        animation.start();
+      }
+    };
+  }
+
+  public HidingToolbarScrollListener getHidingToolbarScrollListener() {
+    if (hidingToolbarScrollListener == null) {
+      hidingToolbarScrollListener = new HidingToolbarScrollListener(
+              getActivity()) {
+        @Override
+        public void onMoved(int distance) {
+          ((MainActivity) getActivity()).translateToolbarContainer(distance);
+        }
+
+        @Override
+        public void onShow() {
+          ((MainActivity) getActivity()).showToolbar();
+        }
+
+        @Override
+        public void onHide() {
+          ((MainActivity) getActivity()).hideToolbar();
+        }
+      };
+    }
+    return hidingToolbarScrollListener;
   }
 
   public ExamItem buildExamItem(Bitmap image) {
@@ -221,8 +275,9 @@ public class FirstFragment extends Fragment {
 
   public void translateFloatingActionButton(int pixels) {
     if (actionButton != null) {
-      if (actionMenu.isOpen()) actionMenu.close(true);
+      //if (actionMenu.isOpen()) actionMenu.close(true);
       actionButton.setTranslationX(-1 * pixels);
+      actionMenu.updateItemPositions();
     }
   }
 

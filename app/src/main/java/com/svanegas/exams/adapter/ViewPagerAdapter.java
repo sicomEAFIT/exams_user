@@ -25,6 +25,11 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter implements
     this.context = context;
   }
 
+  public FirstFragment getFirstFragment() {
+    if (firstFragment == null) firstFragment = new FirstFragment();
+    return firstFragment;
+  }
+
   @Override
   public Fragment getItem(int position) {
     switch (position) {
