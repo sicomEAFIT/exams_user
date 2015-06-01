@@ -57,13 +57,6 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter implements
   @Override
   public void onPageScrolled(int position, float positionOffset,
                              int positionOffsetPixels) {
-    // Solo movemos el botón si el primer fragmento no es nulo y estamos en
-    // la primera posición. (Al finalizar el scroll de la página 'position'
-    // se cambia a 1 y el offset queda en 0, por lo que el botón volvería
-    // al mismo lugar.
-    if (firstFragment != null && position == 0) {
-      firstFragment.translateFloatingActionButton(positionOffsetPixels);
-    }
   }
 
   @Override

@@ -1,7 +1,5 @@
 package com.svanegas.exams.view;
 
-import android.animation.ObjectAnimator;
-import android.animation.PropertyValuesHolder;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -21,14 +19,13 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
+import com.getbase.floatingactionbutton.FloatingActionButton;
+import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.github.mrengineer13.snackbar.SnackBar;
-import com.oguzdev.circularfloatingactionmenu.library.FloatingActionButton;
-import com.oguzdev.circularfloatingactionmenu.library.FloatingActionMenu;
-import com.oguzdev.circularfloatingactionmenu.library.SubActionButton;
 import com.svanegas.exams.adapter.ExamsAdapter;
 import com.svanegas.exams.R;
 import com.svanegas.exams.model.ExamItem;
@@ -52,12 +49,12 @@ public class FirstFragment extends Fragment implements SnackBar
   private HidingToolbarScrollListener hidingToolbarScrollListener;
   private ExamsAdapter adapter;
 
-  private FloatingActionButton actionButton;
-  private FloatingActionMenu actionMenu;
+  private FloatingActionButton actionAddButton;
+  private FloatingActionButton actionDoneButton;
+  private FloatingActionsMenu actionMenu;
 
   private SnackBar errorSnackBar;
 
-  private static final int MENU_ICON_ROTATION_ANGLE = 135;
   private static final int DEFAULT_SNACKBAR_HEIGHT = 96;
 
   @Override
@@ -66,13 +63,22 @@ public class FirstFragment extends Fragment implements SnackBar
     View layout = inflater.inflate(R.layout.first_fragment, container, false);
 
     initRecyclerView(layout);
-    initFloatingActionMenu();
+    initFloatingActionMenu(layout);
 
     return layout;
   }
 
   private void initRecyclerView(View layout) {
     recyclerView = (RecyclerView) layout.findViewById(R.id.recycler_view);
+    recyclerView.setOnTouchListener(new View.OnTouchListener() {
+      @Override
+      public boolean onTouch(View v, MotionEvent event) {
+        if (actionMenu != null && actionMenu.isExpanded()) {
+          actionMenu.collapse();
+        }
+        return false;
+      }
+    });
     adapter = new ExamsAdapter(getActivity(), recyclerView.getItemAnimator());
     recyclerView.setAdapter(adapter);
     int paddingTop = ((MainActivity) getActivity()).getToolbarAndTabsHeight();
@@ -83,79 +89,19 @@ public class FirstFragment extends Fragment implements SnackBar
     recyclerView.setOnScrollListener(getHidingToolbarScrollListener());
   }
 
-  private void initFloatingActionMenu() {
-    // Ítem para agregar nuevo
-    SubActionButton addItem = buildFloatingActionSubItem(R.drawable.ic_plus);
-    addItem.setOnClickListener(takePhotoListener);
+  private void initFloatingActionMenu(View layout) {
+    actionMenu = (FloatingActionsMenu) layout.findViewById(R.id.action_menu);
+    actionAddButton = (FloatingActionButton)
+            layout.findViewById(R.id.action_add);
+    actionDoneButton = (FloatingActionButton)
+            layout.findViewById(R.id.action_done);
 
-    // Ítem finalizar
-    SubActionButton doneItem = buildFloatingActionSubItem(R.drawable.ic_check);
-
-    final ImageView fabIcon = new ImageView(getActivity());
-    fabIcon.setImageResource(R.drawable.ic_action_new);
-
-    // Botón para abrir menú
-    actionButton = new FloatingActionButton.Builder(getActivity())
-            .setContentView(fabIcon)
-            .setBackgroundDrawable(R.drawable.button_action_selector)
-            .build();
-
-    int radius = getActivity().getResources()
-            .getDimensionPixelSize(R.dimen.action_menu_radius);
-
-    // Menú
-    actionMenu = new FloatingActionMenu.Builder(getActivity())
-            .addSubActionView(addItem, 100, 100)
-            .addSubActionView(doneItem, 100, 100)
-            .attachTo(actionButton)
-            .setRadius((int) (radius * 0.75))
-            .build();
-
-    // Listen menu open and close events to animate the button content view
-    actionMenu.setStateChangeListener(buildRotateMenuListenerForMenu(fabIcon));
-  }
-
-  private SubActionButton buildFloatingActionSubItem(int iconDrawable) {
-    SubActionButton.Builder itemBuilder = new SubActionButton
-            .Builder(getActivity());
-    ImageView icon = new ImageView(getActivity());
-    icon.setImageResource(iconDrawable);
-    SubActionButton item = itemBuilder.setContentView(icon).build();
-    return item;
-  }
-
-  private FloatingActionMenu.MenuStateChangeListener
-          buildRotateMenuListenerForMenu(final ImageView fabIcon) {
-
-
-    return new FloatingActionMenu.MenuStateChangeListener() {
-      @Override
-      public void onMenuOpened(FloatingActionMenu floatingActionMenu) {
-        // Rotar el ícono del del FloatingActionButton 135 grados en sentido de
-        // las manecillas del reloj.
-        fabIcon.setRotation(0);
-        PropertyValuesHolder pvhR = PropertyValuesHolder.ofFloat(View.ROTATION,
-                                                      MENU_ICON_ROTATION_ANGLE);
-        ObjectAnimator animation = ObjectAnimator
-                .ofPropertyValuesHolder(fabIcon, pvhR);
-        animation.start();
-      }
-
-      @Override
-      public void onMenuClosed(FloatingActionMenu floatingActionMenu) {
-        // Rotar el ícono del del FloatingActionButton 135 grados en sentido
-        // contrario de las manecillas del reloj.
-        fabIcon.setRotation(MENU_ICON_ROTATION_ANGLE);
-        PropertyValuesHolder pvhR = PropertyValuesHolder.ofFloat(View.ROTATION,
-                                                                 0);
-        ObjectAnimator animation = ObjectAnimator
-                .ofPropertyValuesHolder(fabIcon, pvhR);
-        animation.start();
-      }
-    };
+    actionAddButton.setOnClickListener(takePhotoListener);
+    setupSubmenuButtons();
   }
 
   public HidingToolbarScrollListener getHidingToolbarScrollListener() {
+    //TODO LANDSCAPE FAILS
     Log.d("HidingActio" , "Llego al hiding y es: " + (hidingToolbarScrollListener == null));
     if (hidingToolbarScrollListener == null) {
       hidingToolbarScrollListener = new HidingToolbarScrollListener(
@@ -179,16 +125,19 @@ public class FirstFragment extends Fragment implements SnackBar
     return hidingToolbarScrollListener;
   }
 
-  public ExamItem buildExamItem(Bitmap image) {
+  public ExamItem buildExamItem(String picturePath) throws IOException {
     ExamItem exam = new ExamItem();
-    exam.setIcon(image);
+    exam.setPath(picturePath);
+    Bitmap picture = BitmapHandler
+            .getRotatedAndRoundedBitmapThumbnail(picturePath, getActivity());
+    exam.setPicture(picture);
     return exam;
   }
 
   private View.OnClickListener takePhotoListener = new View.OnClickListener() {
     @Override
     public void onClick(View v) {
-      actionMenu.close(true);
+      actionMenu.collapse();
       openImageIntent();
     }
   };
@@ -279,17 +228,20 @@ public class FirstFragment extends Fragment implements SnackBar
     return uri.getPath();
   }
 
-  public void translateFloatingActionButton(int pixels) {
-    if (actionButton != null) {
-      //if (actionMenu.isOpen()) actionMenu.close(true);
-      actionButton.setTranslationX(-1 * pixels);
-      actionMenu.updateItemPositions();
-    }
-  }
-
   public void recyclerViewElementRemoved() {
     if (hidingToolbarScrollListener != null) {
       hidingToolbarScrollListener.setTotalScrolledDistance(0);
+    }
+    setupSubmenuButtons();
+  }
+
+  /**
+   * Hides the done button when the list is empty
+   */
+  private void setupSubmenuButtons() {
+    if (adapter != null && actionDoneButton != null) {
+      if (adapter.getItemCount() == 0) actionDoneButton.setVisibility(View.GONE);
+      else actionDoneButton.setVisibility(View.VISIBLE);
     }
   }
 
@@ -317,16 +269,11 @@ public class FirstFragment extends Fragment implements SnackBar
           String path = getPath(selectedImage);
           ContentResolver resolver = getActivity().getContentResolver();
           resolver.notifyChange(selectedImage, null);
-          Bitmap bitmapResult;
-          bitmapResult = BitmapHandler.rotateImage(path);
-          bitmapResult = BitmapHandler.getRoundedCornerBitmap(bitmapResult,
-                  Color.TRANSPARENT, 5, 0, getActivity());
-          adapter.addItem(buildExamItem(bitmapResult));
+          adapter.addItem(buildExamItem(path));
+          setupSubmenuButtons();
         }
         catch (Exception e) {
-          /*Toast.makeText(getActivity(), getResources()
-                          .getString(R.string.could_not_load_image),
-                  Toast.LENGTH_SHORT).show();*/
+          Log.d("PUTA", "Vea: " + e.getMessage());
           errorSnackBar = UserFeedback.showSnackBar(getActivity(),
                   R.string.could_not_load_image, R.string.ok, this);
         }
@@ -334,7 +281,7 @@ public class FirstFragment extends Fragment implements SnackBar
     }
     else if (resultCode == Activity.RESULT_CANCELED) {
       if (requestCode == REQUEST_IMAGE_CAPTURE) {
-        actionMenu.open(true);
+        actionMenu.expand();
         deleteImageFile(imageUri);
       }
     }
@@ -344,13 +291,13 @@ public class FirstFragment extends Fragment implements SnackBar
   public void onShow(int i) {
     int height = errorSnackBar != null ?
                  errorSnackBar.getHeight() : DEFAULT_SNACKBAR_HEIGHT;
-    if (actionButton != null) {
-      actionButton.animate().translationY(-height).start();
+    if (actionMenu != null) {
+      actionMenu.animate().translationY(-height).start();
     }
   }
 
   @Override
   public void onHide(int i) {
-    if (actionButton != null) actionButton.animate().translationY(0).start();
+    if (actionMenu != null) actionMenu.animate().translationY(0).start();
   }
 }

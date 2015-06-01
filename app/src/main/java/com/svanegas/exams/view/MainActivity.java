@@ -19,7 +19,6 @@ import it.neokree.materialtabs.MaterialTab;
 import it.neokree.materialtabs.MaterialTabHost;
 import it.neokree.materialtabs.MaterialTabListener;
 
-
 public class MainActivity extends ActionBarActivity implements
         MaterialTabListener {
 
