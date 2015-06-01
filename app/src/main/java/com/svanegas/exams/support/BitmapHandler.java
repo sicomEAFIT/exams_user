@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
@@ -19,34 +20,8 @@ import java.io.IOException;
 
 public class BitmapHandler {
 
-  public static Bitmap rotateImage(String imagePath) throws IOException {
-    BitmapFactory.Options bounds = new BitmapFactory.Options();
-    bounds.inJustDecodeBounds = true;
-    BitmapFactory.decodeFile(imagePath, bounds);
-
-    BitmapFactory.Options opts = new BitmapFactory.Options();
-    Bitmap bm = BitmapFactory.decodeFile(imagePath, opts);
-    ExifInterface exif = new ExifInterface(imagePath);
-    String orientString = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
-    int orientation = orientString != null ? Integer.parseInt(orientString) :
-            ExifInterface.ORIENTATION_NORMAL;
-
-    int rotationAngle = 0;
-    if (orientation == ExifInterface.ORIENTATION_ROTATE_90)
-      rotationAngle = 90;
-    if (orientation == ExifInterface.ORIENTATION_ROTATE_180)
-      rotationAngle = 180;
-    if (orientation == ExifInterface.ORIENTATION_ROTATE_270)
-      rotationAngle = 270;
-
-    Matrix matrix = new Matrix();
-    matrix.setRotate(rotationAngle, (float) bm.getWidth() / 2,
-            (float) bm.getHeight() / 2);
-    Bitmap rotatedBitmap = Bitmap.createBitmap(bm, 0, 0,
-            bounds.outWidth, bounds.outHeight, matrix, true);
-
-    return ThumbnailUtils.extractThumbnail(rotatedBitmap, 800, 450);
-    //return rotatedBitmap;
+  public static Bitmap geThumbnail(Bitmap bitmap, int weight, int height) {
+    return ThumbnailUtils.extractThumbnail(bitmap, weight, height);
   }
 
   public static Bitmap getRoundedCornerBitmap(Bitmap bitmap, int color,
@@ -83,5 +58,52 @@ public class BitmapHandler {
     paint.setStrokeWidth((float) borderSizePx);
     canvas.drawRoundRect(rectF, cornerSizePx, cornerSizePx, paint);
     return output;
+  }
+
+  public static Bitmap loadRotatedBitmapByPath(String imagePath)
+          throws IOException {
+    BitmapFactory.Options bounds = new BitmapFactory.Options();
+    bounds.inJustDecodeBounds = true;
+    BitmapFactory.decodeFile(imagePath, bounds);
+
+    BitmapFactory.Options opts = new BitmapFactory.Options();
+    Bitmap bm = BitmapFactory.decodeFile(imagePath, opts);
+    ExifInterface exif = new ExifInterface(imagePath);
+    String orientString = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
+    int orientation = orientString != null ? Integer.parseInt(orientString) :
+            ExifInterface.ORIENTATION_NORMAL;
+
+    int rotationAngle = 0;
+    if (orientation == ExifInterface.ORIENTATION_ROTATE_90)
+      rotationAngle = 90;
+    if (orientation == ExifInterface.ORIENTATION_ROTATE_180)
+      rotationAngle = 180;
+    if (orientation == ExifInterface.ORIENTATION_ROTATE_270)
+      rotationAngle = 270;
+
+    Matrix matrix = new Matrix();
+    matrix.setRotate(rotationAngle, (float) bm.getWidth() / 2,
+            (float) bm.getHeight() / 2);
+    Bitmap rotatedBitmap = Bitmap.createBitmap(bm, 0, 0,
+            bounds.outWidth, bounds.outHeight, matrix, true);
+
+    return rotatedBitmap;
+  }
+
+  public static Bitmap loadBitmapByPath(String imagePath)
+          throws IOException {
+    BitmapFactory.Options opts = new BitmapFactory.Options();
+    Bitmap imageBitmap = BitmapFactory.decodeFile(imagePath, opts);
+    return imageBitmap;
+  }
+
+  public static Bitmap getRotatedAndRoundedBitmapThumbnail(String path,
+                                                           Context context)
+          throws IOException {
+    Bitmap resultBitmap = loadRotatedBitmapByPath(path);
+    resultBitmap = geThumbnail(resultBitmap, 800, 450);
+    resultBitmap = getRoundedCornerBitmap(resultBitmap, Color.TRANSPARENT,
+                                          5, 0, context);
+    return resultBitmap;
   }
 }

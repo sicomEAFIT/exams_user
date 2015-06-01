@@ -3,7 +3,6 @@ package com.svanegas.exams.adapter;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +11,7 @@ import android.widget.TextView;
 
 import com.svanegas.exams.R;
 import com.svanegas.exams.model.ExamItem;
+import com.svanegas.exams.view.MainActivity;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,8 +46,9 @@ public class ExamsAdapter extends
     ExamItem item = data.get(position);
     String title = context.getString(R.string.page_number, position + 1);
     holder.getTitle().setText(title);
-    if (item.getIcon() != null) holder.getIcon().setImageBitmap(item.getIcon());
-    else holder.getIcon().setImageResource(data.get(position).getIconId());
+    if (item.getPicture() != null) {
+      holder.getIcon().setImageBitmap(item.getPicture());
+    }
   }
 
   @Override
@@ -78,7 +79,7 @@ public class ExamsAdapter extends
 
     public ExamViewHolder(View itemView) {
       super(itemView);
-      icon = (ImageView) itemView.findViewById(R.id.icon);
+      icon = (ImageView) itemView.findViewById(R.id.picture);
       title = (TextView) itemView.findViewById(R.id.title);
       deleteButton = (ImageView) itemView.findViewById(R.id.delete_button);
       deleteButton.setOnClickListener(this);
@@ -124,6 +125,7 @@ public class ExamsAdapter extends
     protected void onPostExecute(Void result) {
       // Cuando pase el tiempo, se notifica que todos los datos cambiaron
       ExamsAdapter.this.notifyDataSetChanged();
+      ((MainActivity) context).recyclerViewElementRemoved();
     }
   }
 }

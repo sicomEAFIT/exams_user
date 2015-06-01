@@ -3,31 +3,23 @@ package com.svanegas.exams.model;
 import android.graphics.Bitmap;
 
 public class ExamItem {
-  private int iconId;
-  private Bitmap icon;
-  private String title;
 
-  public int getIconId() {
-    return iconId;
+  private Bitmap picture;
+  private String path;
+
+  public Bitmap getPicture() {
+    return picture;
   }
 
-  public String getTitle() {
-    return title;
+  public void setPicture(Bitmap picture) {
+    this.picture = picture;
   }
 
-  public void setIconId(int iconId) {
-    this.iconId = iconId;
+  public String getPath() {
+    return path;
   }
 
-  public void setTitle(String title) {
-    this.title = title;
-  }
-
-  public Bitmap getIcon() {
-    return icon;
-  }
-
-  public void setIcon(Bitmap icon) {
-    this.icon = icon;
+  public void setPath(String path) {
+    this.path = path;
   }
 }

@@ -19,7 +19,6 @@ import it.neokree.materialtabs.MaterialTab;
 import it.neokree.materialtabs.MaterialTabHost;
 import it.neokree.materialtabs.MaterialTabListener;
 
-
 public class MainActivity extends ActionBarActivity implements
         MaterialTabListener {
 
@@ -77,6 +76,11 @@ public class MainActivity extends ActionBarActivity implements
   public void hideToolbar() {
     toolbarContainer.animate().translationY(-getToolbarHeight())
             .setInterpolator(new AccelerateInterpolator(2)).start();
+  }
+
+  public void recyclerViewElementRemoved() {
+    showToolbar();
+    adapter.getFirstFragment().recyclerViewElementRemoved();
   }
 
   public int getToolbarHeight() {
